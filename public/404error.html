@@ -1,0 +1,219 @@
+<!DOCTYPE HTML>
+<html lang="es">
+    <head>        
+        <meta http-equiv="content-type" content="text/html">
+        <meta http-equiv="content-language" content="es"/>
+        <meta charset="UTF-8">
+        <title>404 page not found X(</title>
+        	
+    </head>
+    <body>
+    	
+		
+    	<div id="principal">
+        <div id="divbackground"></div >
+            <header>            	
+            	
+        </header>
+            
+            <h1 align="center">404 NOT FOUND</h1>
+            <div align="center"><img src="../img/descarga.gif" alt="page not found" title="page not found" style="width:30%;height:30%;"></div>
+            <h1 align="center">PAGE NOT FOUND </h1>
+            
+            
+        </div> 
+        
+        
+        
+        <footer>
+        	
+            <div align="center"  >copyleft ►@ </div>
+            
+            <div align="left" >
+				<script type="text/javascript">
+                    if(localStorage.pagecount){localStorage.pagecount = Number(localStorage.pagecount)+1;}
+                    else{localStorage.pagecount = 1;}
+                    document.write("localStorage.pagecount: "+localStorage.pagecount+"		");
+                </script>
+                <script type="text/javascript">
+                    if(sessionStorage.pagecount){sessionStorage.pagecount = Number(sessionStorage.pagecount)+1;}
+                    else{sessionStorage.pagecount = 1;}
+                    document.write("          sesionStorage.pagecount: "+sessionStorage.pagecount);
+                </script>
+			</div>            
+            
+	        <div id="footerimg" align="right"> <img src="../img/descarga(53).gif" alt="footerimg" title="footerimg" style="width:50px;height:50px;" > </div>
+            
+        </footer>             
+    </body>
+	<style media="screen" type="text/css">
+		@charset "UTF-8";
+	/* fuentes*/
+	@font-face{
+		font-family:"Normal";//helvetica
+		src:url("fuentes/Normal.ttf") ;
+	}
+	@font-face{
+		font-family:"bold";
+		src:url("fuentes/Bd.ttf") ;
+	}
+	@font-face{
+		font-family:"Italic";
+		src:url("fuentes/It.ttf");	
+	}
+	/*estilos basicos*/
+
+	h1,h2,h3,h4,h5,h6{
+		font-family:"Helvetica";
+		color:rgba(0,0,0,1);
+		text-shadow:0px 2px 5px rgba(0,0,0,0.5);
+		clear:both;	
+	}
+	p{
+		font-family:"Helvetica-Normal";	
+		text-shadow:0px 0px 5px rgba(0,0,0,0.3);	
+	}
+	a{
+		font-family:"Helvetica56-Italic";
+		font-weight:bold;
+		letter-spacing:1px;
+	}
+	a:hover{
+		color:rgba(0,0,255,1);
+		text-shadow: 0px 0px 3px rgba(0,0,0,0.3);
+	}
+	.iconolink{
+		text-decoration:none;
+	}
+	/*menu navegacion*/
+
+
+
+
+	/*maquetacion principal*/
+
+	body{
+		z-index:-2;
+		font-family:"Helvetica-Normal";
+		//text-align:left;	
+		//text-outline:rgba(255,255,255,1);
+		margin:0px;
+		border:1px solid transparent;	
+		//background-image:url(../img/leather.jpg);
+		background-attachment:fixed;
+		background:rgba(50,50,50,1);
+		opacity:1;	
+		padding-left:10px;
+		padding-right:10px;
+		width:100%;
+	}
+	header{
+		position:relative;
+		height:50px;
+		top:00px;
+		vertical-align:central;
+		//background-image:url(../img/leatherheader.jpg);
+		//background-position:-17px -97px;
+		background:rgba(30,30,30,1);
+		border:5px solid white;
+		border-radius:25px 25px 0px 0px;
+		/*animation: tales 15s;-webkit-animation: tales 15s;-moz-animation: tales 15s;-o-animation: tales 15s;
+		animation-iteration-count:infinite;-webkit-animation-iteration-count:infinite;-moz-animation-iteration-count:infinite;-o-animation-iteration-count:infinite;
+	*/
+	}
+	header:hover{	
+		border:5px solid #0F0;	
+	}
+	@keyframes tales{
+		0%{transform:scale(1,1);}
+		66%{transform:scale(1,1);}
+		70%{transform:scale(1,1.5);}
+		100%{transform:scale(1,1);}
+	}
+	@-webkit-keyframes tales{
+		0%{-webkit-transform:scale(1,1);}
+		66%{-webkit-transform:scale(1,1);}
+		70%{-webkit-transform:scale(1,1.5);}	
+		100%{-webkit-transform:scale(1,1);}
+	}
+	@-moz-keyframes tales{
+		0%{-moz-transform:scale(1,1);}
+		66%{-moz-transform:scale(1,1);}
+		70%{-moz-transform:scale(1,1.5);}	
+		100%{-moz-transform:scale(1,1);}
+	}
+	@-o-keyframes tales{
+		0%{-o-transform:scale(1,1);}
+		66%{-o-transform:scale(1,1);}
+		70%{-o-transform:scale(1,1.5);}	
+		100%{-o-transform:scale(1,1);}
+	}
+	footer{
+		background:#0F0;
+		border:5px solid rgba(255,255,255,1);	
+		transition:background 2s;
+		position:relative;
+		height:60px;
+		width:100%-10px;
+		bottom:0;
+	}
+	footer:hover{	
+		background:#06F;	
+	}
+	#footerimg{
+		position:absolute;
+		right:5px;
+		bottom:5px;
+		width:50px; 
+		height:50px;
+	}
+	#principal{
+		position:relative;
+		z-index:1;
+		margin-bottom:0px ;
+		margin-top:0px;	
+		width:100%-2px;
+		height:100%;
+		border:1px;
+		border-radius:25px 25px 0px 0px;
+		opacity:1;
+		border:1px solid lime;
+	}
+	#divbackground{
+		position:absolute;
+		z-index:-1;	
+		//background-image:url(../img/lineas3.jpg) ;
+		background:rgba(255,255,255,1);	
+		//background-attachment:fixed;
+		//background-size:auto;
+		width:100%;
+		height:100%;
+		border-radius:25px 25px 0px 0px;
+		opacity:0.3;
+		/*animation: fondoani 200s;-webkit-animation: fondoani 200s;-moz-animation: fondoani 200s;-o-animation: fondoani 200s;
+		animation-iteration-count:infinite;-webkit-animation-iteration-count:infinite;-moz-animation-iteration-count:infinite;-o-animation-iteration-count:infinite;
+	*/
+	}
+	@keyframes fondoani{
+		0%{background-size:2500px 1875px;}
+		50%{background-size:5000px 3750px;background-position:-625px -468px;}
+		100%{background-size:2500px 1875px;}
+	}
+	@-webkit-keyframes fondoani{
+		0%{background-size:2500px 1875px;}
+		50%{background-size:5000px 3750px;background-position:-625px -468px;}
+		100%{background-size:2500px 1875px;}
+	}
+	@-moz-keyframes fondoani{
+		0%{background-size:2500px 1875px;}
+		50%{background-size:5000px 3750px;background-position:-625px -468px;}
+		100%{background-size:2500px 1875px;}
+	}
+	@-o-keyframes fondoani{
+		0%{background-size:2500px 1875px;}
+		50%{background-size:5000px 3750px;background-position:-625px -468px;}
+		100%{background-size:2500px 1875px;}
+	}	
+		</style>
+
+</html>

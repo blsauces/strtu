@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<html lang="es"  ng-app="index">
+	<head>
+    	
+        <meta charset="UTF-8">
+        <title></title>
+		<link rel="stylesheet" href="./css/estilo.css">
+        <script type="text/javascript" src="./scripts/angular.js" ></script>		
+		<script type="text/javascript" src="./scripts/angular-route.js" ></script>
+		<script type="text/javascript" src="./scripts/script.js" ></script>		
+		<script type="text/javascript" src="./processing/inmediato/web-export/processing.js" ></script>
+		<script type="text/javascript" src="./processing/p5.js" ></script>
+		<script type="text/javascript" src="./processing/angular-p5.js" ></script>
+		<script type="text/javascript" src="./processing/example.js" ></script>
+		<script type="text/javascript" src="./processing/color.js" ></script>
+		<script type="text/javascript" src="./scripts/jscolor/jscolor.js"></script>
+        <!--This is a comment. Comments are not displayed in the browser-->
+    </head>
+	<body ng-controller="mainController"> 
+		{{message}}
+        <div id="principal">
+			<div id="divbackground"></div>
+			
+			
+			<p5 sketch="exampleSketch"></p5>
+			
+			<div id="scintillatingDiv">
+				<input type="button" id="ilusionesButton" onClick="javascript:ilusiones=ilusiones+1;" value="ilusiones"><br>
+				punto<input type="range" id="pointSizeSlider" min="0" max="30" value="12" step="0.1" onChange="" style="width:80%;"><b id="pointSizeText" > </b><br>
+				linea<input type="range" id="lineSizeSlider" min="0" max="30" value="8" step="0.1" onChange="" style="width:80%;"><b id="lineSizeText"> </b><br>
+				rombo<input type="range" id="rhombusSizeSlider" min="0" max="50" value="20" step="0.1" onChange="" style="width:80%;"><b id="rhombusSizeText"> </b><br>
+				randomseed<input type="range" id="randomSeedSlider" min="0" max="666" value="6" step="0.1" onChange="" style="width:80%;"><b id="randomSeedText"> </b><br>
+				step<input type="range" id="stepSizeSlider" min="25" max="666" value="45" step="1" onChange="" style="width:80%;"><b id="stepSizeText"> </b><br>
+				color<input class="color" id="colorSelector" value="000000" ><br>
+			</div>
+            
+            
+			
+            
+			
+        </div>
+        
+        
+        <footer>
+        	
+			
+        </footer>
+	</body>
+    
+</html>
+
