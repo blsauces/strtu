@@ -28,12 +28,5 @@ void draw(){
   }
 }
 
-void mouseWheel(MouseEvent event) {
-  float e = event.getCount();
-    camera(30.0, 0.0, e, // eyeX, eyeY, eyeZ
-         0.0, 0.0, 0.0, // centerX, centerY, centerZ
-         0.0, 1.0, 0.0); // upX, upY, upZ
-  println(e);
-}
 
 
