@@ -56,11 +56,22 @@ void keyPressed() {
     h = color(hue(h),saturation(h),(brightness(h)-1)%(100));
   } 
   if (key == 'l') {
-    float ll = ((brightness(h2)-1.0))%100) * 2.0;    
-    float ss = brightness(h2) <= 1.0 ? ll : 2.0 - ll; 
-    float l = (ll  + ss) / 2.0;
+    //pasar a hsl y procesar
+    float hh = hue(h2);
+    float ll = (2.0 - saturation(h2)) * brightness(h2);
+    float ss = saturation(h2) * brightness(h2);
+    ss /= (ll <= 100.0) ? ll : 2.0 - (ll);
+    ll /= 2.0;
+    System.out.println(ll);
+    ll = (ll + 1.0)%100;  
+   System.out.println(ll); 
+    //devolver a modo hsb
+    ll *= 2;       
+    ss = (ll <= 100.0) ? ll : 2.0 - ll;     
+    float v = (ll  + ss) / 2.0;
+    //System.out.println(v);
     float s = (2 * ss) / (ll + ss);  
-    h2 = color(hue(h2),s,l);
+    h2 = color(hue(h2),s,v);
   }
   
 }
