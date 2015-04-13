@@ -2,6 +2,7 @@ String[] puntos0;
 String[] puntos90;
 String[] puntos180;
 String[] puntos270;
+String[] puntos;
 float upx=0,upy=1,upz=0,roll=PI/2;
 float posx=-400,posy=0,posz=0;
 
@@ -16,6 +17,7 @@ void setup(){
  puntos90 = loadStrings("Im47.off");
  puntos180 = loadStrings("Im48.off");
  puntos270 = loadStrings("Im49.off");
+ puntos = loadStrings("merge.off");
  //
 }
 
@@ -34,7 +36,20 @@ void draw(){
   stroke(0,0,255);//blue z
   line(0, 0, -100, 0, 0, 100);
   
-  rotateZ(PI);         
+  for (int i = 2; i < puntos.length; i++) {
+    String[] punto = split(puntos[i], " ");        
+    float x = Float.parseFloat(punto[0])*300;
+    float y = Float.parseFloat(punto[1])*300;
+    float z = Float.parseFloat(punto[2]);
+    float r = Integer.parseInt(punto[3]);
+    float g = Integer.parseInt(punto[4]);
+    float b = Integer.parseInt(punto[5]);
+    stroke(r,g,b);
+    point(x,y,z);
+        
+  }
+  
+  /*rotateZ(PI);         
   for (int i = 2; i < puntos0.length; i++) {
     String[] punto = split(puntos0[i], " ");        
     float x = Float.parseFloat(punto[0])*300;
@@ -46,7 +61,7 @@ void draw(){
     stroke(r,g,b);
     point(x,y,z);
         
-  }/*
+  }
   rotateY(PI/2);
   for (int i = 2; i < puntos90.length; i++) {
     String[] punto = split(puntos90[i], " ");        
