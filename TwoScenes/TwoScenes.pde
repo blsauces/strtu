@@ -36,7 +36,6 @@ String renderer = P2D;
 //dim
 int w = 640;
 int h = 720;
-boolean withMatrixStack = false;
 
 int x = 0;
 int y = 0;
@@ -46,67 +45,30 @@ float ang = 0;
 void setup() {
   size(w, h, renderer);
   canvas1 = createGraphics(width, height/2, renderer);
-  canvas2 = createGraphics(width, height/2, renderer);
-  font = createFont("Arial", 12);
-  textFont(font, 12);
+  canvas2 = createGraphics(width, height/2, renderer);    
+  font = createFont("Aharoni",42);
 }
 
 public void draw() {
   background(255);
   canvas1.beginDraw();
   canvas1.background(255);
-  // call scene off-screen rendering on canvas 1
-  if (withMatrixStack)
+  // call scene off-screen rendering on canvas 1  
     drawScene(canvas1);
-  else
-    drawSceneWithoutMatrixStack(canvas1);
   canvas1.endDraw();
   // draw canvas onto screen
   image(canvas1, 0, 0);
 
   canvas2.beginDraw();
   canvas2.background(255);
-  // call scene off-screen rendering on canvas 1
-  if (withMatrixStack)
+  // call scene off-screen rendering on canvas 1  
     drawScene(canvas2);
-  else
-    drawSceneWithoutMatrixStack(canvas2);
   canvas2.endDraw();
   // draw canvas onto screen
-  image(canvas2, 0, 360);
+  image(canvas2, 0, 360);  
 }
 
 void drawScene(PGraphics pg) {
-  // draw world coord sys axes
-  drawAxis(pg, 1);
-  // draw a rect in the world coord sys
-  pg.fill(0, 255, 255);
-  pg.rect(0, 0, 30, 10, 5);
-  // define a local coordinate system (L1)
-  pg.pushMatrix();
-  pg.translate(150, 120);
-  pg.rotate(QUARTER_PI / 2);  
-  // draw a second rect respect to the local coordinate system
-  drawAxis(pg, 0.4f);
-  pg.fill(255, 0, 255);
-  pg.rect(0, 0, 30, 10, 5);
-  // define a second local coor sys define respect to the other local sys (L2)
-  pg.pushMatrix();
-  pg.translate(100, 100);
-  pg.rotate(-QUARTER_PI);
-  // draw a third rect respect to the local coordinate system
-  drawAxis(pg, 0.4f);
-  pg.fill(255, 255, 0);
-  pg.rect(0, 0, 30, 10, 5);
-  // "return" to the world coord sys
-  pg.popMatrix();
-  pg.popMatrix();
-  // draw a triangle respect to the world coord sys
-  pg.fill(0, 255, 0);
-  pg.triangle(30, 75, 58, 20, 86, 75);
-}
-
-void drawSceneWithoutMatrixStack(PGraphics pg) {
   //draw camera translations
   if (pg.equals(canvas1)){
   pg.translate(x,y);
@@ -115,38 +77,79 @@ void drawSceneWithoutMatrixStack(PGraphics pg) {
   }
   else{
   pg.pushMatrix();
-  pg.translate(x,y);
-  pg.rotate(ang);
-  pg.scale(z);    
+  pg.scale(1/z);    
+  pg.rotate(-ang);
+  pg.translate(-x,-y);  
+  
   pg.fill(255,252,61,100);
   pg.rect(0,0,width,height/2);
   pg.popMatrix();
-  }
+  }   
   
   // draw world coord sys axes
-  drawAxis(pg, 1);
-  // draw a rect in the world coord sys9
-  pg.fill(0, 255, 255);
-  pg.rect(0, 0, 30, 10, 5);
-  // define a local coordinate system
-  pg.translate(150, 120);
-  pg.rotate(QUARTER_PI / 2);
-  // draw a second rect respect to the local coordinate system
-  drawAxis(pg, 0.4f);
-  pg.fill(255, 0, 255);
-  pg.rect(0, 0, 30, 10, 5);
-  // define a second local coor sys define respect to the other local sys
-  pg.translate(100, 100);
-  pg.rotate(-QUARTER_PI);
-  // draw a third rect respect to the local coordinate system
-  drawAxis(pg, 0.4f);
-  pg.fill(255, 255, 0);
-  pg.rect(0, 0, 30, 10, 5);
+  drawAxis(pg, 1);   
 
-  // Now that we haven't recorded our sequence of transformations
-  // there's no simple way to draw this triangle respect to the world coordinate sys
-  pg.fill(0, 255, 0);
-  pg.triangle(30, 75, 58, 20, 86, 75);
+  pg.strokeWeight(1);
+  pg.stroke(0);
+  
+  pg.fill(230,230,0);
+  pg.ellipse(335,180,50,50);
+  
+  pg.fill(40,170,0);
+  pg.rect(320,165,40,10);
+  
+  pg.fill(0,0,0);
+  pg.rect(340,165,20,15);
+  
+  pg.fill(250,0,0);
+  pg.rect(100,110,80,90);       
+ 
+  pg.fill(250,250,250);  
+  pg.rect(170, 200, 300, 50);
+  
+  pg.fill(250,250,250);  
+  pg.rect(300, 145, 20, 55);
+  
+  pg.fill(250,250,250);  
+  pg.triangle(170, 200, 300, 200, 300, 150);  
+  
+  pg.fill(250,250,250);  
+  pg.triangle(500, 250, 510, 200, 590, 250);
+
+  pg.fill(0,0,0);  
+  pg.rect(360, 205, 100, 45);
+  
+  pg.fill(250,0,0);
+  pg.quad(300,250,226,180,200,186,200,250);
+  
+  pg.fill(250,250,250);
+  pg.rect(320,185,90,15);
+  
+  pg.fill(250,0,0);
+  pg.quad(440,190,430,210,400,205,390,185);
+  
+  pg.fill(250,0,0);
+  pg.quad(440,190,430,210,400,205,390,185);
+  
+  pg.fill(0,0,0);
+  pg.triangle(417,186,390,176,380,185);
+  
+  pg.fill(0,0,0);
+  pg.ellipse(170,220,90,90);
+  
+  pg.fill(50,50,50);
+  pg.ellipse(170,220,40,40);
+
+  pg.fill(0,0,0);
+  pg.ellipse(470,220,90,90);   
+  
+  pg.fill(50,50,50);
+  pg.ellipse(470,220,40,40);
+    
+  pg.textFont(font, 22);
+  pg.text("Shell", 280, 230);
+  pg.text("Honda", 230, 195);
+  
 }
 
 void drawAxis(PGraphics pg) {
@@ -167,20 +170,29 @@ void drawAxis(PGraphics pg, float s) {
   pg.text("Y", 0, 100 * s + 15);
 }
 
-void keyPressed() {
-  //withMatrixStack = !withMatrixStack;  
+void keyPressed() {  
   switch(key){
     //translate
-    case 'w':  y--;        
-    case 's':  y++;               
-    case 'a':  x--;               
-    case 'd':  x++;               
+    case 'w':  y=--y;        
+    case 's':  y=y+1;               
+    case 'a':  x=--x;               
+    case 'd':  x=x+1;               
     //scale
     case 'r':  z=z+0.01;
     case 'f':  z=z-0.01;
     //rotate
     case 'q':  ang=ang+0.01;
     case 'e':  ang=ang-0.01;
-  }
+  }  
 }
 
+void mouseDragged(){
+  x = mouseX;
+  y = mouseY;  
+}
+
+void mouseWheel(MouseEvent event) {
+  float e = event.getCount();
+  z = z + e/10;
+  println(e);
+}
