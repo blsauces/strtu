@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html lang="es"  ng-app="index">
+	<head>
+    	
+        <meta charset="UTF-8">
+        <title></title>
+		<link rel="stylesheet" href="./css/estilo.css">
+        <script type="text/javascript" src="./scripts/angular.js" ></script>		
+		<script type="text/javascript" src="./scripts/angular-route.js" ></script>
+		<script type="text/javascript" src="./scripts/script.js" ></script>		
+		<script type="text/javascript" src="./processing/p5.min.js" ></script>
+		<script type="text/javascript" src="./processing/angular-p5.js" ></script>
+		<script type="text/javascript" src="./processing/example.js" ></script>
+		<script type="text/javascript" src="./processing/minimap.js" ></script>
+		<script type="text/javascript" src="./scripts/jscolor/jscolor.js"></script>
+        <!--This is a comment. Comments are not displayed in the browser-->
+    </head>
+	<body ng-controller="mainController"> 
+		{{message}}
+        <div id="principal">
+			<div id="divbackground"></div>			
+			
+			<!--<p5 sketch="exampleSketch"></p5>-->
+			
+			<div id="minimapDiv">
+				
+			</div>
+			framerate<b id="framerateText" > </b><br>
+			<input type="range" id="framerateSlider" min="1" max="40" value="5" step="1" onChange="setFramerate(this.value);actualizarValor('framerateText',this.value)" style="width:95%;"><br>
+            minimapScaleSlider<b id="minimapScaleText" > </b><br>
+			<input type="range" id="minimapScaleSlider" min="0.01" max="1" value="0.25" step="0.001" onChange="setMinimapScale(this.value);actualizarValor('minimapScaleText',this.value)" style="width:95%;"><br>
+			rotacion<b id="rotacionSliderText" > </b><br>
+			<input type="range" id="rotacionSlider" min="0" max="360" value="0" step="0.1" onChange="setRotacion(this.value);actualizarValor('rotacionSliderText',this.value)" style="width:95%;"><br>
+      
+			
+            
+			
+            
+			
+        </div>
+        
+        
+        <footer>
+        	
+			
+        </footer>
+	</body>
+    
+</html>
+

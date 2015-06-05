@@ -7,7 +7,7 @@ window.onload = function() {
 };
 
 
-var p5 = function(p5) {
+/*var p5 = function(p5) {
   return function(p) {
     var r = p.random(0, 255);
     var g = p.random(0, 255);
@@ -48,20 +48,20 @@ var p5 = function(p5) {
 		}
     };
   };
-};
+};*/
 
 
 (function(){
-	var app=angular.module("index",["ngRoute",'angular-p5']).factory('exampleSketch', ['p5', p5]);
+	var app=angular.module("index",["ngRoute"/*,'angular-p5'*/])/*.factory('exampleSketch', ['p5', p5])*/;
 	 
 
 	var mainController=function($scope,$http){
 		$scope.message="helloe";
 		$scope.point=7;
 			
-		var videosSuccess=function(response){
+		/*var videosSuccess=function(response){
 			console.log(response.data);			
-			/*for(var i=0;i<json.videos.nombre.length;i++){				
+			for(var i=0;i<json.videos.nombre.length;i++){				
 				video=document.createElement("video");
 				video.setAttribute("src","./videos/"+json.videos.nombre[i]);	
 				video.setAttribute("controls", "controls");
@@ -71,7 +71,7 @@ var p5 = function(p5) {
 			}
 			div=document.createElement("div");
 			div.setAttribute("style","clear:both;");
-			document.getElementById("listarvideosdiv").appendChild(div);*/
+			document.getElementById("listarvideosdiv").appendChild(div);
 		};
 		var videosError=function(response){
 			console.log(response.status+response.statusText);
@@ -80,7 +80,7 @@ var p5 = function(p5) {
 			method: 'GET',
 			url: "http://localhost/videos.json",
 			//,headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-		}).then(videosSuccess,videosError);
+		}).then(videosSuccess,videosError);*/
 		
 		$scope.getVideoUrl=function(nombre){
 			return "./videos/"+nombre;

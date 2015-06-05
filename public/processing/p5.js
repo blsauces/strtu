@@ -1,4 +1,4 @@
-/*! p5.js v0.4.1 February 13, 2015 */
+/*! p5.js v0.4.5 May 27, 2015 */
 (function (root, factory) {
   if (typeof define === 'function' && define.amd)
     define('p5', [], function () { return (root.returnExportsGlobal = factory());});
@@ -87,6 +87,14 @@ amdclean['constants'] = function (require) {
     SOFT_LIGHT: 'soft-light',
     DODGE: 'color-dodge',
     BURN: 'color-burn',
+    THRESHOLD: 'threshold',
+    GRAY: 'gray',
+    OPAQUE: 'opaque',
+    INVERT: 'invert',
+    POSTERIZE: 'posterize',
+    DILATE: 'dilate',
+    ERODE: 'erode',
+    BLUR: 'blur',
     NORMAL: 'normal',
     ITALIC: 'italic',
     BOLD: 'bold',
@@ -124,7 +132,6 @@ amdclean['core'] = function (require, shim, constants) {
       'mousedown': null,
       'mouseup': null,
       'click': null,
-      'mousewheel': null,
       'mouseover': null,
       'mouseout': null,
       'keydown': null,
@@ -136,6 +143,18 @@ amdclean['core'] = function (require, shim, constants) {
       'resize': null,
       'blur': null
     };
+    if (window.DeviceOrientationEvent) {
+      this._events.deviceorientation = null;
+    } else if (window.DeviceMotionEvent) {
+      this._events.devicemotion = null;
+    } else {
+      this._events.MozOrientation = null;
+    }
+    if (/Firefox/i.test(navigator.userAgent)) {
+      this._events.DOMMouseScroll = null;
+    } else {
+      this._events.mousewheel = null;
+    }
     this._loadingScreenId = 'p5_loading';
     this._start = function () {
       if (this._userNode) {
@@ -216,6 +235,7 @@ amdclean['core'] = function (require, shim, constants) {
         }.bind(this), 1000 / this._targetFrameRate);
       }
       this.redraw();
+      this._updatePAccelerations();
       this._updatePMouseCoords();
       this._updatePTouchCoords();
     }.bind(this);
@@ -301,7 +321,7 @@ amdclean['core'] = function (require, shim, constants) {
       sketch(this);
     }
     for (var e in this._events) {
-      var f = this['on' + e];
+      var f = this['_on' + e];
       if (f) {
         var m = f.bind(this);
         window.addEventListener(e, m);
@@ -349,85 +369,10 @@ amdclean['core'] = function (require, shim, constants) {
   }.bind(this);
   return p5;
 }({}, amdclean['shim'], amdclean['constants']);
-amdclean['p5Color'] = function (require, core, constants) {
+amdclean['utilscolor_utils'] = function (require, core) {
   var p5 = core;
-  var constants = constants;
-  p5.Color = function (pInst, vals) {
-    this.color_array = p5.Color._getFormattedColor.apply(pInst, vals);
-    this._normalizeColorArray(pInst);
-    if (pInst._colorMode === constants.HSB) {
-      this.hsba = this.color_array;
-      this.rgba = p5.ColorUtils._hsbToRGB(this.color_array);
-    } else {
-      this.rgba = this.color_array;
-      this.hsba = p5.ColorUtils._rgbaToHSBA(this.color_array);
-    }
-    return this;
-  };
-  p5.Color.prototype._normalizeColorArray = function (pInst) {
-    var isRGB = pInst._colorMode === constants.RGB;
-    var maxArr = isRGB ? pInst._maxRGB : pInst._maxHSB;
-    var arr = this.color_array;
-    arr[0] *= 255 / maxArr[0];
-    arr[1] *= 255 / maxArr[1];
-    arr[2] *= 255 / maxArr[2];
-    arr[3] *= 255 / maxArr[3];
-    return arr;
-  };
-  p5.Color.prototype.getHue = function () {
-    return this.hsba[0];
-  };
-  p5.Color.prototype.getSaturation = function () {
-    return this.hsba[1];
-  };
-  p5.Color.prototype.getBrightness = function () {
-    return this.hsba[2];
-  };
-  p5.Color.prototype.getRed = function () {
-    return this.rgba[0];
-  };
-  p5.Color.prototype.getGreen = function () {
-    return this.rgba[1];
-  };
-  p5.Color.prototype.getBlue = function () {
-    return this.rgba[2];
-  };
-  p5.Color.prototype.getAlpha = function () {
-    return this.rgba[3];
-  };
-  p5.Color.prototype.toString = function () {
-    var a = this.rgba;
-    for (var i = 0; i < 3; i++) {
-      a[i] = Math.floor(a[i]);
-    }
-    var alpha = typeof a[3] !== 'undefined' ? a[3] / 255 : 1;
-    return 'rgba(' + a[0] + ',' + a[1] + ',' + a[2] + ',' + alpha + ')';
-  };
-  p5.Color._getFormattedColor = function () {
-    var r, g, b, a;
-    if (arguments.length >= 3) {
-      r = arguments[0];
-      g = arguments[1];
-      b = arguments[2];
-      a = typeof arguments[3] === 'number' ? arguments[3] : 255;
-    } else {
-      if (this._colorMode === constants.RGB) {
-        r = g = b = arguments[0];
-      } else {
-        r = b = arguments[0];
-        g = 0;
-      }
-      a = typeof arguments[1] === 'number' ? arguments[1] : 255;
-    }
-    return [
-      r,
-      g,
-      b,
-      a
-    ];
-  };
   p5.ColorUtils = {};
-  p5.ColorUtils._hsbToRGB = function (hsba) {
+  p5.ColorUtils.hsbaToRGBA = function (hsba) {
     var h = hsba[0];
     var s = hsba[1];
     var v = hsba[2];
@@ -488,7 +433,7 @@ amdclean['p5Color'] = function (require, core, constants) {
     }
     return RGBA;
   };
-  p5.ColorUtils._rgbaToHSBA = function (rgba) {
+  p5.ColorUtils.rgbaToHSBA = function (rgba) {
     var var_R = rgba[0] / 255;
     var var_G = rgba[1] / 255;
     var var_B = rgba[2] / 255;
@@ -527,8 +472,324 @@ amdclean['p5Color'] = function (require, core, constants) {
       rgba[3]
     ];
   };
+  return p5.ColorUtils;
+}({}, amdclean['core']);
+amdclean['p5Color'] = function (require, core, utilscolor_utils, constants) {
+  var p5 = core;
+  var color_utils = utilscolor_utils;
+  var constants = constants;
+  p5.Color = function (pInst, vals) {
+    this.color_array = p5.Color._getFormattedColor.apply(pInst, vals);
+    this._normalizeColorArray(pInst);
+    if (pInst._colorMode === constants.HSB) {
+      this.hsba = this.color_array;
+      this.rgba = color_utils.hsbaToRGBA(this.hsba);
+    } else {
+      this.rgba = this.color_array;
+      this.hsba = color_utils.rgbaToHSBA(this.rgba);
+    }
+    return this;
+  };
+  p5.Color.prototype._normalizeColorArray = function (pInst) {
+    var isRGB = pInst._colorMode === constants.RGB;
+    var maxArr = isRGB ? pInst._maxRGB : pInst._maxHSB;
+    var arr = this.color_array;
+    arr[0] *= 255 / maxArr[0];
+    arr[1] *= 255 / maxArr[1];
+    arr[2] *= 255 / maxArr[2];
+    arr[3] *= 255 / maxArr[3];
+    return arr;
+  };
+  p5.Color.prototype.getHue = function () {
+    return this.hsba[0];
+  };
+  p5.Color.prototype.getSaturation = function () {
+    return this.hsba[1];
+  };
+  p5.Color.prototype.getBrightness = function () {
+    return this.hsba[2];
+  };
+  p5.Color.prototype.getRed = function () {
+    return this.rgba[0];
+  };
+  p5.Color.prototype.getGreen = function () {
+    return this.rgba[1];
+  };
+  p5.Color.prototype.getBlue = function () {
+    return this.rgba[2];
+  };
+  p5.Color.prototype.getAlpha = function () {
+    return this.rgba[3];
+  };
+  p5.Color.prototype.toString = function () {
+    var a = this.rgba;
+    for (var i = 0; i < 3; i++) {
+      a[i] = Math.floor(a[i]);
+    }
+    var alpha = typeof a[3] !== 'undefined' ? a[3] / 255 : 1;
+    return 'rgba(' + a[0] + ',' + a[1] + ',' + a[2] + ',' + alpha + ')';
+  };
+  var WHITESPACE = /\s*/;
+  var INTEGER = /(\d{1,3})/;
+  var DECIMAL = /((?:\d+(?:\.\d+)?)|(?:\.\d+))/;
+  var PERCENT = new RegExp(DECIMAL.source + '%');
+  var namedColors = {
+      aliceblue: '#f0f8ff',
+      antiquewhite: '#faebd7',
+      aqua: '#00ffff',
+      aquamarine: '#7fffd4',
+      azure: '#f0ffff',
+      beige: '#f5f5dc',
+      bisque: '#ffe4c4',
+      black: '#000000',
+      blanchedalmond: '#ffebcd',
+      blue: '#0000ff',
+      blueviolet: '#8a2be2',
+      brown: '#a52a2a',
+      burlywood: '#deb887',
+      cadetblue: '#5f9ea0',
+      chartreuse: '#7fff00',
+      chocolate: '#d2691e',
+      coral: '#ff7f50',
+      cornflowerblue: '#6495ed',
+      cornsilk: '#fff8dc',
+      crimson: '#dc143c',
+      cyan: '#00ffff',
+      darkblue: '#00008b',
+      darkcyan: '#008b8b',
+      darkgoldenrod: '#b8860b',
+      darkgray: '#a9a9a9',
+      darkgreen: '#006400',
+      darkgrey: '#a9a9a9',
+      darkkhaki: '#bdb76b',
+      darkmagenta: '#8b008b',
+      darkolivegreen: '#556b2f',
+      darkorange: '#ff8c00',
+      darkorchid: '#9932cc',
+      darkred: '#8b0000',
+      darksalmon: '#e9967a',
+      darkseagreen: '#8fbc8f',
+      darkslateblue: '#483d8b',
+      darkslategray: '#2f4f4f',
+      darkslategrey: '#2f4f4f',
+      darkturquoise: '#00ced1',
+      darkviolet: '#9400d3',
+      deeppink: '#ff1493',
+      deepskyblue: '#00bfff',
+      dimgray: '#696969',
+      dimgrey: '#696969',
+      dodgerblue: '#1e90ff',
+      firebrick: '#b22222',
+      floralwhite: '#fffaf0',
+      forestgreen: '#228b22',
+      fuchsia: '#ff00ff',
+      gainsboro: '#dcdcdc',
+      ghostwhite: '#f8f8ff',
+      gold: '#ffd700',
+      goldenrod: '#daa520',
+      gray: '#808080',
+      green: '#008000',
+      greenyellow: '#adff2f',
+      grey: '#808080',
+      honeydew: '#f0fff0',
+      hotpink: '#ff69b4',
+      indianred: '#cd5c5c',
+      indigo: '#4b0082',
+      ivory: '#fffff0',
+      khaki: '#f0e68c',
+      lavender: '#e6e6fa',
+      lavenderblush: '#fff0f5',
+      lawngreen: '#7cfc00',
+      lemonchiffon: '#fffacd',
+      lightblue: '#add8e6',
+      lightcoral: '#f08080',
+      lightcyan: '#e0ffff',
+      lightgoldenrodyellow: '#fafad2',
+      lightgray: '#d3d3d3',
+      lightgreen: '#90ee90',
+      lightgrey: '#d3d3d3',
+      lightpink: '#ffb6c1',
+      lightsalmon: '#ffa07a',
+      lightseagreen: '#20b2aa',
+      lightskyblue: '#87cefa',
+      lightslategray: '#778899',
+      lightslategrey: '#778899',
+      lightsteelblue: '#b0c4de',
+      lightyellow: '#ffffe0',
+      lime: '#00ff00',
+      limegreen: '#32cd32',
+      linen: '#faf0e6',
+      magenta: '#ff00ff',
+      maroon: '#800000',
+      mediumaquamarine: '#66cdaa',
+      mediumblue: '#0000cd',
+      mediumorchid: '#ba55d3',
+      mediumpurple: '#9370db',
+      mediumseagreen: '#3cb371',
+      mediumslateblue: '#7b68ee',
+      mediumspringgreen: '#00fa9a',
+      mediumturquoise: '#48d1cc',
+      mediumvioletred: '#c71585',
+      midnightblue: '#191970',
+      mintcream: '#f5fffa',
+      mistyrose: '#ffe4e1',
+      moccasin: '#ffe4b5',
+      navajowhite: '#ffdead',
+      navy: '#000080',
+      oldlace: '#fdf5e6',
+      olive: '#808000',
+      olivedrab: '#6b8e23',
+      orange: '#ffa500',
+      orangered: '#ff4500',
+      orchid: '#da70d6',
+      palegoldenrod: '#eee8aa',
+      palegreen: '#98fb98',
+      paleturquoise: '#afeeee',
+      palevioletred: '#db7093',
+      papayawhip: '#ffefd5',
+      peachpuff: '#ffdab9',
+      peru: '#cd853f',
+      pink: '#ffc0cb',
+      plum: '#dda0dd',
+      powderblue: '#b0e0e6',
+      purple: '#800080',
+      red: '#ff0000',
+      rosybrown: '#bc8f8f',
+      royalblue: '#4169e1',
+      saddlebrown: '#8b4513',
+      salmon: '#fa8072',
+      sandybrown: '#f4a460',
+      seagreen: '#2e8b57',
+      seashell: '#fff5ee',
+      sienna: '#a0522d',
+      silver: '#c0c0c0',
+      skyblue: '#87ceeb',
+      slateblue: '#6a5acd',
+      slategray: '#708090',
+      slategrey: '#708090',
+      snow: '#fffafa',
+      springgreen: '#00ff7f',
+      steelblue: '#4682b4',
+      tan: '#d2b48c',
+      teal: '#008080',
+      thistle: '#d8bfd8',
+      tomato: '#ff6347',
+      turquoise: '#40e0d0',
+      violet: '#ee82ee',
+      wheat: '#f5deb3',
+      white: '#ffffff',
+      whitesmoke: '#f5f5f5',
+      yellow: '#ffff00',
+      yellowgreen: '#9acd32'
+    };
+  var colorPatterns = {
+      HEX3: /^#([a-f0-9])([a-f0-9])([a-f0-9])$/i,
+      HEX6: /^#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$/i,
+      RGB: new RegExp([
+        '^rgb\\(',
+        INTEGER.source,
+        ',',
+        INTEGER.source,
+        ',',
+        INTEGER.source,
+        '\\)$'
+      ].join(WHITESPACE.source), 'i'),
+      RGB_PERCENT: new RegExp([
+        '^rgb\\(',
+        PERCENT.source,
+        ',',
+        PERCENT.source,
+        ',',
+        PERCENT.source,
+        '\\)$'
+      ].join(WHITESPACE.source), 'i'),
+      RGBA: new RegExp([
+        '^rgba\\(',
+        INTEGER.source,
+        ',',
+        INTEGER.source,
+        ',',
+        INTEGER.source,
+        ',',
+        DECIMAL.source,
+        '\\)$'
+      ].join(WHITESPACE.source), 'i'),
+      RGBA_PERCENT: new RegExp([
+        '^rgba\\(',
+        PERCENT.source,
+        ',',
+        PERCENT.source,
+        ',',
+        PERCENT.source,
+        ',',
+        DECIMAL.source,
+        '\\)$'
+      ].join(WHITESPACE.source), 'i')
+    };
+  p5.Color._getFormattedColor = function () {
+    var r, g, b, a, str, vals;
+    if (arguments.length >= 3) {
+      r = arguments[0];
+      g = arguments[1];
+      b = arguments[2];
+      a = typeof arguments[3] === 'number' ? arguments[3] : 255;
+    } else if (typeof arguments[0] === 'string') {
+      str = arguments[0].trim().toLowerCase();
+      if (namedColors[str]) {
+        return p5.Color._getFormattedColor.apply(this, [namedColors[str]]);
+      }
+      if (colorPatterns.HEX3.test(str)) {
+        vals = colorPatterns.HEX3.exec(str).slice(1).map(function (color) {
+          return parseInt(color + color, 16);
+        });
+      } else if (colorPatterns.HEX6.test(str)) {
+        vals = colorPatterns.HEX6.exec(str).slice(1).map(function (color) {
+          return parseInt(color, 16);
+        });
+      } else if (colorPatterns.RGB.test(str)) {
+        vals = colorPatterns.RGB.exec(str).slice(1).map(function (color) {
+          return parseInt(color, 10);
+        });
+      } else if (colorPatterns.RGB_PERCENT.test(str)) {
+        vals = colorPatterns.RGB_PERCENT.exec(str).slice(1).map(function (color) {
+          return parseInt(parseFloat(color) / 100 * 255, 10);
+        });
+      } else if (colorPatterns.RGBA.test(str)) {
+        vals = colorPatterns.RGBA.exec(str).slice(1).map(function (color, idx) {
+          if (idx === 3) {
+            return parseInt(parseFloat(color) * 255, 10);
+          }
+          return parseInt(color, 10);
+        });
+      } else if (colorPatterns.RGBA_PERCENT.test(str)) {
+        vals = colorPatterns.RGBA_PERCENT.exec(str).slice(1).map(function (color, idx) {
+          if (idx === 3) {
+            return parseInt(parseFloat(color) * 255, 10);
+          }
+          return parseInt(parseFloat(color) / 100 * 255, 10);
+        });
+      } else {
+        vals = [255];
+      }
+      return p5.Color._getFormattedColor.apply(this, vals);
+    } else {
+      if (this._colorMode === constants.RGB) {
+        r = g = b = arguments[0];
+      } else {
+        r = b = arguments[0];
+        g = 0;
+      }
+      a = typeof arguments[1] === 'number' ? arguments[1] : 255;
+    }
+    return [
+      r,
+      g,
+      b,
+      a
+    ];
+  };
   return p5.Color;
-}({}, amdclean['core'], amdclean['constants']);
+}({}, amdclean['core'], amdclean['utilscolor_utils'], amdclean['constants']);
 amdclean['p5Element'] = function (require, core) {
   var p5 = core;
   p5.Element = function (elt, pInst) {
@@ -1361,6 +1622,22 @@ amdclean['p5Vector'] = function (require, core, polargeometry, constants) {
       this.z || 0
     ];
   };
+  p5.Vector.prototype.equals = function (x, y, z) {
+    if (x instanceof p5.Vector) {
+      x = x.x || 0;
+      y = x.y || 0;
+      z = x.z || 0;
+    } else if (x instanceof Array) {
+      x = x[0] || 0;
+      y = x[1] || 0;
+      z = x[2] || 0;
+    } else {
+      x = x || 0;
+      y = y || 0;
+      z = z || 0;
+    }
+    return this.x === x && this.y === y && this.z === z;
+  };
   p5.Vector.fromAngle = function (angle) {
     if (this.p5) {
       if (this.p5._angleMode === constants.DEGREES) {
@@ -1756,24 +2033,38 @@ amdclean['p5Table'] = function (require, core) {
       delete this.rows[i].obj[cString];
     }
   };
+  p5.Table.prototype.set = function (row, column, value) {
+    this.rows[row].set(column, value);
+  };
+  p5.Table.prototype.setNum = function (row, column, value) {
+    this.rows[row].set(column, value);
+  };
+  p5.Table.prototype.setString = function (row, column, value) {
+    this.rows[row].set(column, value);
+  };
+  p5.Table.prototype.get = function (row, column) {
+    return this.rows[row].get(column);
+  };
+  p5.Table.prototype.getNum = function (row, column) {
+    return this.rows[row].getNum(column);
+  };
+  p5.Table.prototype.getString = function (row, column) {
+    return this.rows[row].getString(column);
+  };
   return p5.Table;
 }({}, amdclean['core']);
 amdclean['colorcreating_reading'] = function (require, core, p5Color) {
   'use strict';
   var p5 = core;
   p5.prototype.alpha = function (c) {
-    if (c instanceof p5.Color) {
-      return c.getAlpha();
-    } else if (c instanceof Array) {
+    if (c instanceof p5.Color || c instanceof Array) {
       return this.color(c).getAlpha();
     } else {
       throw new Error('Needs p5.Color or pixel array as argument.');
     }
   };
   p5.prototype.blue = function (c) {
-    if (c instanceof p5.Color) {
-      return c.getBlue();
-    } else if (c instanceof Array) {
+    if (c instanceof p5.Color || c instanceof Array) {
       return this.color(c).getBlue();
     } else {
       throw new Error('Needs p5.Color or pixel array as argument.');
@@ -1788,15 +2079,15 @@ amdclean['colorcreating_reading'] = function (require, core, p5Color) {
   p5.prototype.color = function () {
     if (arguments[0] instanceof p5.Color) {
       return arguments[0];
+    } else if (arguments[0] instanceof Array) {
+      return new p5.Color(this, arguments[0]);
     } else {
       var args = Array.prototype.slice.call(arguments);
       return new p5.Color(this, args);
     }
   };
   p5.prototype.green = function (c) {
-    if (c instanceof p5.Color) {
-      return c.getGreen();
-    } else if (c instanceof Array) {
+    if (c instanceof p5.Color || c instanceof Array) {
       return this.color(c).getGreen();
     } else {
       throw new Error('Needs p5.Color or pixel array as argument.');
@@ -1809,26 +2100,25 @@ amdclean['colorcreating_reading'] = function (require, core, p5Color) {
     return c.getHue();
   };
   p5.prototype.lerpColor = function (c1, c2, amt) {
+    amt = Math.max(Math.min(amt, 1), 0);
     if (c1 instanceof Array) {
       var c = [];
       for (var i = 0; i < c1.length; i++) {
-        c.push(p5.prototype.lerp(c1[i], c2[i], amt));
+        c.push(Math.sqrt(p5.prototype.lerp(c1[i] * c1[i], c2[i] * c2[i], amt)));
       }
       return c;
     } else if (c1 instanceof p5.Color) {
       var pc = [];
       for (var j = 0; j < 4; j++) {
-        pc.push(p5.prototype.lerp(c1.rgba[j], c2.rgba[j], amt));
+        pc.push(Math.sqrt(p5.prototype.lerp(c1.rgba[j] * c1.rgba[j], c2.rgba[j] * c2.rgba[j], amt)));
       }
       return new p5.Color(this, pc);
     } else {
-      return p5.prototype.lerp(c1, c2, amt);
+      return Math.sqrt(p5.prototype.lerp(c1 * c1, c2 * c2, amt));
     }
   };
   p5.prototype.red = function (c) {
-    if (c instanceof p5.Color) {
-      return c.getRed();
-    } else if (c instanceof Array) {
+    if (c instanceof p5.Color || c instanceof Array) {
       return this.color(c).getRed();
     } else {
       throw new Error('Needs p5.Color or pixel array as argument.');
@@ -1889,6 +2179,7 @@ amdclean['colorsetting'] = function (require, core, constants, p5Color) {
         maxArr[0] = arguments[1];
         maxArr[1] = arguments[1];
         maxArr[2] = arguments[1];
+        maxArr[3] = arguments[1];
       } else if (arguments.length > 2) {
         maxArr[0] = arguments[1];
         maxArr[1] = arguments[2];
@@ -1934,7 +2225,78 @@ amdclean['dataconversion'] = function (require, core) {
     } else if (typeof n === 'boolean') {
       return n ? 1 : 0;
     } else if (n instanceof Array) {
-      return n.map(p5.prototype.int);
+      return n.map(function (n) {
+        return p5.prototype.int(n, radix);
+      });
+    }
+  };
+  p5.prototype.str = function (n) {
+    if (n instanceof Array) {
+      return n.map(p5.prototype.str);
+    } else {
+      return String(n);
+    }
+  };
+  p5.prototype.boolean = function (n) {
+    if (typeof n === 'number') {
+      return n !== 0;
+    } else if (typeof n === 'string') {
+      return n.toLowerCase() === 'true';
+    } else if (typeof n === 'boolean') {
+      return n;
+    } else if (n instanceof Array) {
+      return n.map(p5.prototype.boolean);
+    }
+  };
+  p5.prototype.byte = function (n) {
+    var nn = p5.prototype.int(n, 10);
+    if (typeof nn === 'number') {
+      return (nn + 128) % 256 - 128;
+    } else if (nn instanceof Array) {
+      return nn.map(p5.prototype.byte);
+    }
+  };
+  p5.prototype.char = function (n) {
+    if (typeof n === 'number' && !isNaN(n)) {
+      return String.fromCharCode(n);
+    } else if (n instanceof Array) {
+      return n.map(p5.prototype.char);
+    } else if (typeof n === 'string') {
+      return p5.prototype.char(parseInt(n, 10));
+    }
+  };
+  p5.prototype.unchar = function (n) {
+    if (typeof n === 'string' && n.length === 1) {
+      return n.charCodeAt(0);
+    } else if (n instanceof Array) {
+      return n.map(p5.prototype.unchar);
+    }
+  };
+  p5.prototype.hex = function (n, digits) {
+    digits = digits === undefined || digits === null ? digits = 8 : digits;
+    if (n instanceof Array) {
+      return n.map(function (n) {
+        return p5.prototype.hex(n, digits);
+      });
+    } else if (typeof n === 'number') {
+      if (n < 0) {
+        n = 4294967295 + n + 1;
+      }
+      var hex = Number(n).toString(16).toUpperCase();
+      while (hex.length < digits) {
+        hex = '0' + hex;
+      }
+      if (hex.length >= digits) {
+        hex = hex.substring(hex.length - digits, hex.length);
+      }
+      return hex;
+    }
+  };
+  p5.prototype.unhex = function (n) {
+    if (n instanceof Array) {
+      return n.map(p5.prototype.unhex);
+    } else {
+      return parseInt('0x' + n, 16);
     }
   };
   return p5;
@@ -1977,6 +2339,17 @@ amdclean['dataarray_functions'] = function (require, core) {
   p5.prototype.shorten = function (list) {
     list.pop();
     return list;
+  };
+  p5.prototype.shuffle = function (arr, bool) {
+    arr = bool || ArrayBuffer.isView(arr) ? arr : arr.slice();
+    var rnd, tmp, idx = arr.length;
+    while (idx > 1) {
+      rnd = Math.random() * idx | 0;
+      tmp = arr[--idx];
+      arr[idx] = arr[rnd];
+      arr[rnd] = tmp;
+    }
+    return arr;
   };
   p5.prototype.sort = function (list, count) {
     var arr = count ? list.slice(0, Math.min(count, list.length)) : list;
@@ -2186,7 +2559,7 @@ amdclean['environment'] = function (require, core, constants) {
   p5.prototype.displayHeight = screen.height;
   p5.prototype.windowWidth = window.innerWidth;
   p5.prototype.windowHeight = window.innerHeight;
-  p5.prototype.onresize = function (e) {
+  p5.prototype._onresize = function (e) {
     this._setProperty('windowWidth', window.innerWidth);
     this._setProperty('windowHeight', window.innerHeight);
     var context = this._isGlobal ? window : this;
@@ -2213,7 +2586,11 @@ amdclean['environment'] = function (require, core, constants) {
   };
   p5.prototype.devicePixelScaling = function (val) {
     if (val) {
-      this._pixelDensity = window.devicePixelRatio || 1;
+      if (typeof val === 'number') {
+        this._pixelDensity = val;
+      } else {
+        this._pixelDensity = window.devicePixelRatio || 1;
+      }
     } else {
       this._pixelDensity = 1;
     }
@@ -2241,6 +2618,8 @@ amdclean['environment'] = function (require, core, constants) {
       document.mozCancelFullScreen();
     } else if (document.webkitExitFullscreen) {
       document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
     }
   }
   p5.prototype.getURL = function () {
@@ -2572,7 +2951,7 @@ amdclean['imagepixels'] = function (require, core, filters, p5Color) {
   else
     context[name] = definition();
 }('reqwest', amdclean, function () {
-  var win = window, doc = document, twoHundo = /^(20\d|1223)$/, byTag = 'getElementsByTagName', readyState = 'readyState', contentType = 'Content-Type', requestedWith = 'X-Requested-With', head = doc[byTag]('head')[0], uniqid = 0, callbackPrefix = 'reqwest_' + +new Date(), lastValue, xmlHttpRequest = 'XMLHttpRequest', xDomainRequest = 'XDomainRequest', noop = function () {
+  var win = window, doc = document, httpsRe = /^http/, protocolRe = /(^\w+):\/\//, twoHundo = /^(20\d|1223)$/, byTag = 'getElementsByTagName', readyState = 'readyState', contentType = 'Content-Type', requestedWith = 'X-Requested-With', head = doc[byTag]('head')[0], uniqid = 0, callbackPrefix = 'reqwest_' + +new Date(), lastValue, xmlHttpRequest = 'XMLHttpRequest', xDomainRequest = 'XDomainRequest', noop = function () {
     }, isArray = typeof Array.isArray == 'function' ? Array.isArray : function (a) {
       return a instanceof Array;
     }, defaultHeaders = {
@@ -2606,13 +2985,20 @@ amdclean['imagepixels'] = function (require, core, filters, p5Color) {
         return data;
       }
     };
+  function succeed(r) {
+    var protocol = protocolRe.exec(r.url);
+    protocol = protocol && protocol[1] || window.location.protocol;
+    return httpsRe.test(protocol) ? twoHundo.test(r.request.status) : !!r.request.response;
+  }
   function handleReadyState(r, success, error) {
     return function () {
       if (r._aborted)
         return error(r.request);
+      if (r._timedOut)
+        return error(r.request, 'Request is aborted: timeout');
       if (r.request && r.request[readyState] == 4) {
         r.request.onreadystatechange = noop;
-        if (twoHundo.test(r.request.status))
+        if (succeed(r))
           success(r.request);
         else
           error(r.request);
@@ -2622,9 +3008,10 @@ amdclean['imagepixels'] = function (require, core, filters, p5Color) {
   function setHeaders(http, o) {
     var headers = o['headers'] || {}, h;
     headers['Accept'] = headers['Accept'] || defaultHeaders['accept'][o['type']] || defaultHeaders['accept']['*'];
+    var isAFormData = typeof FormData === 'function' && o['data'] instanceof FormData;
     if (!o['crossOrigin'] && !headers[requestedWith])
       headers[requestedWith] = defaultHeaders['requestedWith'];
-    if (!headers[contentType])
+    if (!headers[contentType] && !isAFormData)
       headers[contentType] = o['contentType'] || defaultHeaders['contentType'];
     for (h in headers)
       headers.hasOwnProperty(h) && 'setRequestHeader' in http && http.setRequestHeader(h, headers[h]);
@@ -2656,7 +3043,6 @@ amdclean['imagepixels'] = function (require, core, filters, p5Color) {
     script.src = url;
     script.async = true;
     if (typeof script.onreadystatechange !== 'undefined' && !isIE10) {
-      script.event = 'onclick';
       script.htmlFor = script.id = '_reqwest_' + reqId;
     }
     script.onload = script.onreadystatechange = function () {
@@ -2717,9 +3103,15 @@ amdclean['imagepixels'] = function (require, core, filters, p5Color) {
     this.fn = fn;
     init.apply(this, arguments);
   }
-  function setType(url) {
-    var m = url.match(/\.(json|jsonp|html|xml)(\?|$)/);
-    return m ? m[1] : 'js';
+  function setType(header) {
+    if (header.match('json'))
+      return 'json';
+    if (header.match('javascript'))
+      return 'js';
+    if (header.match('text'))
+      return 'html';
+    if (header.match('xml'))
+      return 'xml';
   }
   function init(o, fn) {
     this.url = typeof o == 'string' ? o : o['url'];
@@ -2732,12 +3124,12 @@ amdclean['imagepixels'] = function (require, core, filters, p5Color) {
     this._completeHandlers = [];
     this._erred = false;
     this._responseArgs = {};
-    var self = this, type = o['type'] || setType(this.url);
+    var self = this;
     fn = fn || function () {
     };
     if (o['timeout']) {
       this.timeout = setTimeout(function () {
-        self.abort();
+        timedOut();
       }, o['timeout']);
     }
     if (o['success']) {
@@ -2763,6 +3155,7 @@ amdclean['imagepixels'] = function (require, core, filters, p5Color) {
       }
     }
     function success(resp) {
+      var type = o['type'] || resp && setType(resp.getResponseHeader('Content-Type'));
       resp = type !== 'jsonp' ? self.request : resp;
       var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type), r = filteredResponse;
       try {
@@ -2797,6 +3190,10 @@ amdclean['imagepixels'] = function (require, core, filters, p5Color) {
         resp = self._fulfillmentHandlers.shift()(resp);
       }
       complete(resp);
+    }
+    function timedOut() {
+      self._timedOut = true;
+      self.request.abort();
     }
     function error(resp, msg, t) {
       resp = self.request;
@@ -2849,6 +3246,9 @@ amdclean['imagepixels'] = function (require, core, filters, p5Color) {
         this._errorHandlers.push(fn);
       }
       return this;
+    },
+    'catch': function (fn) {
+      return this.fail(fn);
     }
   };
   function reqwest(o, fn) {
@@ -3018,7 +3418,7 @@ amdclean['inputfiles'] = function (require, core, reqwest) {
     var path = arguments[0];
     var callback = arguments[1];
     var ret = [];
-    var t = path.indexOf('http') === -1 ? 'json' : 'jsonp';
+    var t = 'json';
     if (typeof arguments[2] === 'string') {
       if (arguments[2] === 'jsonp' || arguments[2] === 'json') {
         t = arguments[2];
@@ -3061,6 +3461,7 @@ amdclean['inputfiles'] = function (require, core, reqwest) {
     var options = [];
     var header = false;
     var sep = ',';
+    var separatorSet = false;
     for (var i = 1; i < arguments.length; i++) {
       if (typeof arguments[i] === 'function') {
         callback = arguments[i];
@@ -3070,45 +3471,128 @@ amdclean['inputfiles'] = function (require, core, reqwest) {
           header = true;
         }
         if (arguments[i] === 'csv') {
-          sep = ',';
+          if (separatorSet) {
+            throw new Error('Cannot set multiple separator types.');
+          } else {
+            sep = ',';
+            separatorSet = true;
+          }
         } else if (arguments[i] === 'tsv') {
-          sep = '\t';
+          if (separatorSet) {
+            throw new Error('Cannot set multiple separator types.');
+          } else {
+            sep = '\t';
+            separatorSet = true;
+          }
         }
       }
     }
-    var ret = [];
     var t = new p5.Table();
-    var req = new XMLHttpRequest();
-    req.open('GET', path, true);
-    req.onreadystatechange = function () {
-      if (req.readyState === 4 && (req.status === 200 || req.status === 0)) {
-        var arr = req.responseText.match(/[^\r\n]+/g);
-        for (var k in arr) {
-          ret[k] = arr[k];
+    reqwest({
+      url: path,
+      crossOrigin: true,
+      type: 'csv'
+    }).then(function (resp) {
+      resp = resp.responseText;
+      var state = {};
+      var PRE_TOKEN = 0, MID_TOKEN = 1, POST_TOKEN = 2, POST_RECORD = 4;
+      var QUOTE = '"', CR = '\r', LF = '\n';
+      var records = [];
+      var offset = 0;
+      var currentRecord = null;
+      var currentChar;
+      var recordBegin = function () {
+        state.escaped = false;
+        currentRecord = [];
+        tokenBegin();
+      };
+      var recordEnd = function () {
+        state.currentState = POST_RECORD;
+        records.push(currentRecord);
+        currentRecord = null;
+      };
+      var tokenBegin = function () {
+        state.currentState = PRE_TOKEN;
+        state.token = '';
+      };
+      var tokenEnd = function () {
+        currentRecord.push(state.token);
+        tokenBegin();
+      };
+      while (true) {
+        currentChar = resp[offset++];
+        if (currentChar == null) {
+          if (state.escaped) {
+            throw new Error('Unclosed quote in file.');
+          }
+          if (currentRecord) {
+            tokenEnd();
+            recordEnd();
+            break;
+          }
         }
-        if (typeof callback !== 'undefined') {
-          var i, row;
-          if (header) {
-            t.columns = new p5.TableRow(ret[0]).arr;
-            for (i = 1; i < ret.length; i++) {
-              row = new p5.TableRow(ret[i], sep);
-              row.obj = makeObject(row.arr, t.columns);
-              t.addRow(row);
+        if (currentRecord === null) {
+          recordBegin();
+        }
+        if (state.currentState === PRE_TOKEN) {
+          if (currentChar === QUOTE) {
+            state.escaped = true;
+            state.currentState = MID_TOKEN;
+            continue;
+          }
+          state.currentState = MID_TOKEN;
+        }
+        if (state.currentState === MID_TOKEN && state.escaped) {
+          if (currentChar === QUOTE) {
+            if (resp[offset] === QUOTE) {
+              state.token += QUOTE;
+              offset++;
+            } else {
+              state.escaped = false;
+              state.currentState = POST_TOKEN;
             }
           } else {
-            for (i = 0; i < ret[0].split(sep).length; i++) {
-              t.columns[i] = i.toString();
-            }
-            for (i = 0; i < ret.length; i++) {
-              row = new p5.TableRow(ret[i], sep);
-              t.addRow(row);
-            }
+            state.token += currentChar;
           }
-          callback(t);
+          continue;
+        }
+        if (currentChar === CR) {
+          if (resp[offset] === LF) {
+            offset++;
+          }
+          tokenEnd();
+          recordEnd();
+        } else if (currentChar === LF) {
+          tokenEnd();
+          recordEnd();
+        } else if (currentChar === sep) {
+          tokenEnd();
+        } else if (state.currentState === MID_TOKEN) {
+          state.token += currentChar;
         }
       }
-    };
-    req.send(null);
+      if (header) {
+        t.columns = records.shift();
+      } else {
+        for (i = 0; i < records.length; i++) {
+          t.columns[i] = i.toString();
+        }
+      }
+      var row;
+      for (i = 0; i < records.length; i++) {
+        row = new p5.TableRow();
+        row.arr = records[i];
+        row.obj = makeObject(records[i], t.columns);
+        t.addRow(row);
+      }
+      if (callback !== null) {
+        callback(t);
+      }
+    }).fail(function (err, msg) {
+      if (typeof callback !== 'undefined') {
+        callback(false);
+      }
+    });
     return t;
   };
   function makeObject(row, headers) {
@@ -3212,7 +3696,7 @@ amdclean['inputkeyboard'] = function (require, core) {
   p5.prototype.keyIsPressed = false;
   p5.prototype.key = '';
   p5.prototype.keyCode = 0;
-  p5.prototype.onkeydown = function (e) {
+  p5.prototype._onkeydown = function (e) {
     this._setProperty('isKeyPressed', true);
     this._setProperty('keyIsPressed', true);
     this._setProperty('keyCode', e.which);
@@ -3230,7 +3714,7 @@ amdclean['inputkeyboard'] = function (require, core) {
       }
     }
   };
-  p5.prototype.onkeyup = function (e) {
+  p5.prototype._onkeyup = function (e) {
     var keyReleased = this.keyReleased || window.keyReleased;
     this._setProperty('isKeyPressed', false);
     this._setProperty('keyIsPressed', false);
@@ -3248,7 +3732,7 @@ amdclean['inputkeyboard'] = function (require, core) {
       }
     }
   };
-  p5.prototype.onkeypress = function (e) {
+  p5.prototype._onkeypress = function (e) {
     this._setProperty('keyCode', e.which);
     this._setProperty('key', String.fromCharCode(e.which));
     var keyTyped = this.keyTyped || window.keyTyped;
@@ -3259,11 +3743,88 @@ amdclean['inputkeyboard'] = function (require, core) {
       }
     }
   };
-  p5.prototype.onblur = function (e) {
+  p5.prototype._onblur = function (e) {
     downKeys = {};
   };
   p5.prototype.keyIsDown = function (code) {
     return downKeys[code];
+  };
+  return p5;
+}({}, amdclean['core']);
+amdclean['inputacceleration'] = function (require, core) {
+  'use strict';
+  var p5 = core;
+  p5.prototype.deviceOrientation = undefined;
+  p5.prototype.accelerationX = 0;
+  p5.prototype.accelerationY = 0;
+  p5.prototype.accelerationZ = 0;
+  p5.prototype.pAccelerationX = 0;
+  p5.prototype.pAccelerationY = 0;
+  p5.prototype.pAccelerationZ = 0;
+  p5.prototype._updatePAccelerations = function () {
+    this._setProperty('pAccelerationX', this.accelerationX);
+    this._setProperty('pAccelerationY', this.accelerationY);
+    this._setProperty('pAccelerationZ', this.accelerationZ);
+  };
+  var move_threshold = 0.5;
+  p5.prototype.setMoveThreshold = function (val) {
+    if (typeof val === 'number') {
+      move_threshold = val;
+    }
+  };
+  var old_max_axis = '';
+  var new_max_axis = '';
+  p5.prototype._ondeviceorientation = function (e) {
+    this._setProperty('accelerationX', e.beta);
+    this._setProperty('accelerationY', e.gamma);
+    this._setProperty('accelerationZ', e.alpha);
+    this._handleMotion();
+  };
+  p5.prototype._ondevicemotion = function (e) {
+    this._setProperty('accelerationX', e.acceleration.x * 2);
+    this._setProperty('accelerationY', e.acceleration.y * 2);
+    this._setProperty('accelerationZ', e.acceleration.z * 2);
+    this._handleMotion();
+  };
+  p5.prototype._onMozOrientation = function (e) {
+    this._setProperty('accelerationX', e.x);
+    this._setProperty('accelerationY', e.y);
+    this._setProperty('accelerationZ', e.z);
+    this._handleMotion();
+  };
+  p5.prototype._handleMotion = function () {
+    if (window.orientation === 90 || window.orientation === -90) {
+      this._setProperty('deviceOrientation', 'landscape');
+    } else if (window.orientation === 0) {
+      this._setProperty('deviceOrientation', 'portrait');
+    } else if (window.orientation === undefined) {
+      this._setProperty('deviceOrientation', 'undefined');
+    }
+    var onDeviceMove = this.onDeviceMove || window.onDeviceMove;
+    if (typeof onDeviceMove === 'function') {
+      if (Math.abs(this.accelerationX - this.pAccelerationX) > move_threshold || Math.abs(this.accelerationY - this.pAccelerationY) > move_threshold || Math.abs(this.accelerationZ - this.pAccelerationZ) > move_threshold) {
+        onDeviceMove();
+      }
+    }
+    var onDeviceTurn = this.onDeviceTurn || window.onDeviceTurn;
+    if (typeof onDeviceTurn === 'function') {
+      var max_val = 0;
+      if (Math.abs(this.accelerationX) > max_val) {
+        max_val = this.accelerationX;
+        new_max_axis = 'x';
+      }
+      if (Math.abs(this.accelerationY) > max_val) {
+        max_val = this.accelerationY;
+        new_max_axis = 'y';
+      }
+      if (Math.abs(this.accelerationZ) > max_val) {
+        new_max_axis = 'z';
+      }
+      if (old_max_axis !== '' && old_max_axis !== new_max_axis) {
+        onDeviceTurn(new_max_axis);
+      }
+      old_max_axis = new_max_axis;
+    }
   };
   return p5;
 }({}, amdclean['core']);
@@ -3322,7 +3883,7 @@ amdclean['inputmouse'] = function (require, core, constants) {
       }
     }
   };
-  p5.prototype.onmousemove = function (e) {
+  p5.prototype._onmousemove = function (e) {
     var context = this._isGlobal ? window : this;
     var executeDefault;
     this._updateMouseCoords(e);
@@ -3348,7 +3909,7 @@ amdclean['inputmouse'] = function (require, core, constants) {
       }
     }
   };
-  p5.prototype.onmousedown = function (e) {
+  p5.prototype._onmousedown = function (e) {
     var context = this._isGlobal ? window : this;
     var executeDefault;
     this._setProperty('isMousePressed', true);
@@ -3368,7 +3929,7 @@ amdclean['inputmouse'] = function (require, core, constants) {
       this._updateTouchCoords(e);
     }
   };
-  p5.prototype.onmouseup = function (e) {
+  p5.prototype._onmouseup = function (e) {
     var context = this._isGlobal ? window : this;
     var executeDefault;
     this._setProperty('isMousePressed', false);
@@ -3386,7 +3947,7 @@ amdclean['inputmouse'] = function (require, core, constants) {
       this._updateTouchCoords(e);
     }
   };
-  p5.prototype.onclick = function (e) {
+  p5.prototype._onclick = function (e) {
     var context = this._isGlobal ? window : this;
     if (typeof context.mouseClicked === 'function') {
       var executeDefault = context.mouseClicked(e);
@@ -3395,7 +3956,7 @@ amdclean['inputmouse'] = function (require, core, constants) {
       }
     }
   };
-  p5.prototype.onmousewheel = function (e) {
+  p5.prototype._onmousewheel = p5.prototype._onDOMMouseScroll = function (e) {
     var context = this._isGlobal ? window : this;
     if (typeof context.mouseWheel === 'function') {
       var executeDefault = context.mouseWheel(e);
@@ -3450,7 +4011,7 @@ amdclean['inputtouch'] = function (require, core) {
       this._setProperty('touchX', touchPos.x);
       this._setProperty('touchY', touchPos.y);
       var touches = [];
-      for (var i = 0; i < e.changedTouches.length; i++) {
+      for (var i = 0; i < e.touches.length; i++) {
         var pos = getTouchPos(this._curElement.elt, e, i);
         touches[i] = {
           x: pos.x,
@@ -3467,12 +4028,13 @@ amdclean['inputtouch'] = function (require, core) {
   function getTouchPos(canvas, e, i) {
     i = i || 0;
     var rect = canvas.getBoundingClientRect();
+    var touch = e.touches[i] || e.changedTouches[i];
     return {
-      x: e.changedTouches[i].pageX - rect.left,
-      y: e.changedTouches[i].pageY - rect.top
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top
     };
   }
-  p5.prototype.ontouchstart = function (e) {
+  p5.prototype._ontouchstart = function (e) {
     var context = this._isGlobal ? window : this;
     var executeDefault;
     this._updateTouchCoords(e);
@@ -3489,7 +4051,7 @@ amdclean['inputtouch'] = function (require, core) {
       }
     }
   };
-  p5.prototype.ontouchmove = function (e) {
+  p5.prototype._ontouchmove = function (e) {
     var context = this._isGlobal ? window : this;
     var executeDefault;
     this._updateTouchCoords(e);
@@ -3506,7 +4068,7 @@ amdclean['inputtouch'] = function (require, core) {
       this._updateMouseCoords(e);
     }
   };
-  p5.prototype.ontouchend = function (e) {
+  p5.prototype._ontouchend = function (e) {
     this._updateTouchCoords(e);
     if (this.touches.length === 0) {
       this._setProperty('touchIsDown', false);
@@ -3916,17 +4478,17 @@ amdclean['outputfiles'] = function (require, core) {
     } else if (args[0] instanceof p5.Graphics) {
       p5.prototype.saveCanvas(args[0].elt, args[1], args[2]);
       return;
-    } else if (typeof args[0] === 'string') {
+    } else if (args.length === 1 && typeof args[0] === 'string') {
       p5.prototype.saveCanvas(cnv, args[0]);
     } else {
       var extension = _checkFileExtension(args[1], args[2])[1];
       switch (extension) {
       case 'json':
         p5.prototype.saveJSON(args[0], args[1], args[2]);
-        break;
+        return;
       case 'txt':
         p5.prototype.saveStrings(args[0], args[1], args[2]);
-        break;
+        return;
       default:
         if (args[0] instanceof Array) {
           p5.prototype.saveStrings(args[0], args[1], args[2]);
@@ -3936,8 +4498,6 @@ amdclean['outputfiles'] = function (require, core) {
           p5.prototype.saveCanvas(args[0].canvas, args[1]);
         } else if (args[0] instanceof p5.SoundFile) {
           p5.prototype.saveSound(args[0], args[1], args[2], args[3]);
-        } else if (args[0] instanceof Object) {
-          p5.prototype.saveJSON(args[0], args[1], args[2]);
         }
       }
     }
@@ -3949,6 +4509,7 @@ amdclean['outputfiles'] = function (require, core) {
     } else {
       stringify = JSON.stringify(json, undefined, 2);
     }
+    console.log(stringify);
     this.saveStrings(stringify.split('\n'), filename, 'json');
   };
   p5.prototype.saveJSONObject = p5.prototype.saveJSON;
@@ -4072,7 +4633,7 @@ amdclean['outputfiles'] = function (require, core) {
     href = null;
   };
   function _checkFileExtension(filename, extension) {
-    if (!extension) {
+    if (!extension || extension === true || extension === 'true') {
       extension = '';
     }
     if (!filename) {
@@ -4478,17 +5039,66 @@ amdclean['shape2d_primitives'] = function (require, core, canvas, constants) {
     }
     return this;
   };
-  p5.prototype.rect = function (a, b, c, d) {
+  p5.prototype.rect = function (x, y, w, h, tl, tr, br, bl) {
     if (!this._doStroke && !this._doFill) {
       return;
     }
-    var vals = canvas.modeAdjust(a, b, c, d, this._rectMode);
+    var vals = canvas.modeAdjust(x, y, w, h, this._rectMode);
     var ctx = this.drawingContext;
     if (this._doStroke && ctx.lineWidth % 2 === 1) {
       ctx.translate(0.5, 0.5);
     }
     ctx.beginPath();
-    ctx.rect(vals.x, vals.y, vals.w, vals.h);
+    if (typeof tl === 'undefined') {
+      ctx.rect(vals.x, vals.y, vals.w, vals.h);
+    } else {
+      if (typeof tr === 'undefined') {
+        tr = tl;
+      }
+      if (typeof br === 'undefined') {
+        br = tr;
+      }
+      if (typeof bl === 'undefined') {
+        bl = br;
+      }
+      var _x = vals.x;
+      var _y = vals.y;
+      var _w = vals.w;
+      var _h = vals.h;
+      var hw = _w / 2;
+      var hh = _h / 2;
+      if (_w < 2 * tl) {
+        tl = hw;
+      }
+      if (_h < 2 * tl) {
+        tl = hh;
+      }
+      if (_w < 2 * tr) {
+        tr = hw;
+      }
+      if (_h < 2 * tr) {
+        tr = hh;
+      }
+      if (_w < 2 * br) {
+        br = hw;
+      }
+      if (_h < 2 * br) {
+        br = hh;
+      }
+      if (_w < 2 * bl) {
+        bl = hw;
+      }
+      if (_h < 2 * bl) {
+        bl = hh;
+      }
+      ctx.beginPath();
+      ctx.moveTo(_x + tl, _y);
+      ctx.arcTo(_x + _w, _y, _x + _w, _y + _h, tr);
+      ctx.arcTo(_x + _w, _y + _h, _x, _y + _h, br);
+      ctx.arcTo(_x, _y + _h, _x, _y, bl);
+      ctx.arcTo(_x, _y, _x + _w, _y, tl);
+      ctx.closePath();
+    }
     if (this._doFill) {
       ctx.fill();
     }
@@ -4626,9 +5236,6 @@ amdclean['shapecurves'] = function (require, core) {
   p5.prototype.curveTangent = function (a, b, c, d, t) {
     var t2 = t * t, f1 = -3 * t2 / 2 + 2 * t - 0.5, f2 = 9 * t2 / 2 - 5 * t, f3 = -9 * t2 / 2 + 4 * t + 0.5, f4 = 3 * t2 / 2 - t;
     return a * f1 + b * f2 + c * f3 + d * f4;
-  };
-  p5.prototype.curveTightness = function () {
-    throw 'not yet implemented';
   };
   return p5;
 }({}, amdclean['core']);
@@ -5221,11 +5828,8 @@ amdclean['typographyloading_displaying'] = function (require, core) {
   'use strict';
   var p5 = core;
   p5.prototype.text = function (str, x, y, maxWidth, maxHeight) {
-    if (typeof str === 'number') {
-      str = str.toString();
-    }
     if (typeof str !== 'string') {
-      return;
+      str = str.toString();
     }
     if (typeof maxWidth !== 'undefined') {
       y += this._textLeading;
@@ -5270,7 +5874,7 @@ amdclean['typographyloading_displaying'] = function (require, core) {
   };
   return p5;
 }({}, amdclean['core']);
-amdclean['src_app'] = function (require, core, p5Color, p5Element, p5Graphics, p5Image, p5File, p5Vector, p5TableRow, p5Table, colorcreating_reading, colorsetting, constants, dataconversion, dataarray_functions, datastring_functions, environment, imageimage, imageloading_displaying, imagepixels, inputfiles, inputkeyboard, inputmouse, inputtime_date, inputtouch, mathmath, mathcalculation, mathrandom, mathnoise, mathtrigonometry, outputfiles, outputimage, outputtext_area, renderingrendering, shape2d_primitives, shapeattributes, shapecurves, shapevertex, structure, transform, typographyattributes, typographyloading_displaying) {
+amdclean['src_app'] = function (require, core, p5Color, p5Element, p5Graphics, p5Image, p5File, p5Vector, p5TableRow, p5Table, colorcreating_reading, colorsetting, constants, dataconversion, dataarray_functions, datastring_functions, environment, imageimage, imageloading_displaying, imagepixels, inputfiles, inputkeyboard, inputacceleration, inputmouse, inputtime_date, inputtouch, mathmath, mathcalculation, mathrandom, mathnoise, mathtrigonometry, outputfiles, outputimage, outputtext_area, renderingrendering, shape2d_primitives, shapeattributes, shapecurves, shapevertex, structure, transform, typographyattributes, typographyloading_displaying) {
   'use strict';
   var p5 = core;
   var _globalInit = function () {
@@ -5286,6 +5890,6 @@ amdclean['src_app'] = function (require, core, p5Color, p5Element, p5Graphics, p
     window.addEventListener('load', _globalInit, false);
   }
   return p5;
-}({}, amdclean['core'], amdclean['p5Color'], amdclean['p5Element'], amdclean['p5Graphics'], amdclean['p5Image'], amdclean['p5File'], amdclean['p5Vector'], amdclean['p5TableRow'], amdclean['p5Table'], amdclean['colorcreating_reading'], amdclean['colorsetting'], amdclean['constants'], amdclean['dataconversion'], amdclean['dataarray_functions'], amdclean['datastring_functions'], amdclean['environment'], amdclean['imageimage'], amdclean['imageloading_displaying'], amdclean['imagepixels'], amdclean['inputfiles'], amdclean['inputkeyboard'], amdclean['inputmouse'], amdclean['inputtime_date'], amdclean['inputtouch'], amdclean['mathmath'], amdclean['mathcalculation'], amdclean['mathrandom'], amdclean['mathnoise'], amdclean['mathtrigonometry'], amdclean['outputfiles'], amdclean['outputimage'], amdclean['outputtext_area'], amdclean['renderingrendering'], amdclean['shape2d_primitives'], amdclean['shapeattributes'], amdclean['shapecurves'], amdclean['shapevertex'], amdclean['structure'], amdclean['transform'], amdclean['typographyattributes'], amdclean['typographyloading_displaying']);
+}({}, amdclean['core'], amdclean['p5Color'], amdclean['p5Element'], amdclean['p5Graphics'], amdclean['p5Image'], amdclean['p5File'], amdclean['p5Vector'], amdclean['p5TableRow'], amdclean['p5Table'], amdclean['colorcreating_reading'], amdclean['colorsetting'], amdclean['constants'], amdclean['dataconversion'], amdclean['dataarray_functions'], amdclean['datastring_functions'], amdclean['environment'], amdclean['imageimage'], amdclean['imageloading_displaying'], amdclean['imagepixels'], amdclean['inputfiles'], amdclean['inputkeyboard'], amdclean['inputacceleration'], amdclean['inputmouse'], amdclean['inputtime_date'], amdclean['inputtouch'], amdclean['mathmath'], amdclean['mathcalculation'], amdclean['mathrandom'], amdclean['mathnoise'], amdclean['mathtrigonometry'], amdclean['outputfiles'], amdclean['outputimage'], amdclean['outputtext_area'], amdclean['renderingrendering'], amdclean['shape2d_primitives'], amdclean['shapeattributes'], amdclean['shapecurves'], amdclean['shapevertex'], amdclean['structure'], amdclean['transform'], amdclean['typographyattributes'], amdclean['typographyloading_displaying']);
 return amdclean['src_app'];
 }));

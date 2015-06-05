@@ -58,27 +58,6 @@ body{
 	padding-left:10px;
 	padding-right:10px;
 }
-header{
-	position:relative;
-	height:50px;
-	top:-10px;
-	vertical-align:central;
-	//background-image:url(../img/leatherheader.jpg);
-	//background-position:-17px -97px;
-	background:rgba(30,30,30,1);
-	border:5px solid white;
-	border-radius:25px 25px 0px 0px;
-	/*animation: tales 15s;-webkit-animation: tales 15s;-moz-animation: tales 15s;-o-animation: tales 15s;
-	animation-iteration-count:infinite;-webkit-animation-iteration-count:infinite;-moz-animation-iteration-count:infinite;-o-animation-iteration-count:infinite;
-*/
-}
-.headerIcono{
-	width:15%;
-	height:100%;
-}
-header:hover{	
-	border:5px solid #0F0;	
-}
 
 footer{
 	background:#0F0;
@@ -91,20 +70,14 @@ footer{
 footer:hover{	
 	background:#06F;	
 }
-#footerimg{
-	position:absolute;
-	right:5px;
-	bottom:5px;
-	width:50px; 
-	height:50px;
-}
+
 #principal{
 	position:relative;
 	z-index:1;
 	margin-bottom:50px ;
 	margin-top:20px;	
 	width:100%;
-	min-height:1000px;
+	min-height:500px;
 	border-radius:25px 25px 0px 0px;
 	opacity:1;
 }
@@ -124,34 +97,6 @@ footer:hover{
 */
 }
 
-#imagenCap{
-	position:absolute;
-	top:10px;
-	left:10px;
-	width:100px;
-	height:60px;
-}
-#videodiv{
-	text-align:center;
-}
-#audiodiv{
-	text-align:center;
-}
-#imagenRS{
-	opacity:0.8;
-	box-shadow:0px 0px 10px #FFF;
-	transition: opacity 1s, box-shadow 3s;		
-}
-#imagenRS:hover{
-	opacity:1;
-	box-shadow:0px 0px 300px #FF3;
-}
-#imagenRSdiv{
-	//margin:auto;
-	//width:800px;
-	text-align:center;
-}
-
 
 textarea:focus{
 	box-shadow:0px 0px 10px white;
@@ -164,135 +109,9 @@ input:invalid{
 	border-color:red;
 	box-shadow: 0px 0px 10px red;
 }
-#contactoTable{
-	margin:auto;
-	border:0;
-}
-.tdcontacto{
-	text-align:right;
-	vertical-align:top;
-}
-#contactoDiv{
-	width:70%;
-	background: rgba(100,100,100,0.8);
-	margin:auto;
-	margin-top:50px;
-	margin-bottom:50px;
-	color:white;
-	height:200px;
-}
-#loginDiv{
-	z-index:2;
-	position:absolute;
-	right:20px;
-	margin-top:40px;
-	text-align:right;
-}
-#loginForm{
-	
-}
-input.loginInput{
-	background:rgba(0,0,0,0.6);	
-}
-input.loginInputClickeado{
-	background:rgba(0,0,0,0.6);	
-	color:rgba(255,255,255,1);	
-	transition:box-shadow 0.5s, transform 0.5s;-webkit-transition:box-shadow 0.5s, transform 0.5s;-moz-transition:box-shadow 0.5s, transform 0.5s;-o-transition:box-shadow 0.5s, transform 0.5s;
-}
-input.loginInputClickeado:focus{
-	background:rgba(0,0,0,0.6);	
-	font-weight:bold;
-	transform:scale(1.2,1.2) translate(15px,-20px);-webkit-transform:scale(1.2,1.2) translate(15px,-20px);-moz-transform:scale(1.2,1.2) translate(15px,-20px);-o-transform:scale(1.2,1.2) translate(15px,-20px);
-}
-#registrateBoton{
-	position:absolute;
-	right:0px;
-	bottom:-15px;
-	color:rgba(0,0,0,1);
-	font-size:11px;
-	text-decoration:none;
-	margin-right:10px;
-	text-shadow:0px 0px 5px rgba(255,255,255,1);	
-}
-#registrateBoton:hover{	
-	transform:scale(1.2,1.2);-webkit-transform:scale(1.2,1.2);-moz-transform:scale(1.2,1.2);-o-transform:scale(1.2,1.2);
-	background:rgba(255,255,255,1);
-}
-#catdiv{
-	text-align:center;
-	margin-top:500px;
-}
-#loginMensaje{
-	position:absolute;
-	right:100px;
-	top:0px;
-	color:rgba(153,255,0,1);
-	font-size:20px;
-}
-#registroTable{
-	margin:auto;
-	border:0;
-}
-#registroDiv{
-	width:70%;
-	background: rgba(100,100,100,0.8);
-	margin:auto;
-	margin-top:50px;
-	margin-bottom:50px;
-	color:white;
-	height:200px;
-	text-align:right;
-	vertical-align:top;
-}
-#registroError{
-	font-weight:bold;
-	color:red;
-}
-#listarArchivos{
-	margin-left:30px;
-	border:2px solid green;
-}
-#panoramicasPrincipalDiv{
-	margin:10px;
-	background: rgba(0,0,0,0.3);
-}
-.imgPanoramicasPrincipal{
-	opacity:0.7;
-	float:right;
-	right:0;
-	margin-bottom:10px;
-	margin-top:10px;
-	width:49.5%;
-	transition:opacity 2s;
-	///*transition: transform 2s;-webkit-transition: transform 2s;-moz-transition: transform 2s;-o--moz-transition: transform 2s;
-*/}
-.imgPanoramicasPrincipal:hover{
-	z-index:4;
-	opacity:1;
-	///*transform:scale(1.1,1.1)translateX(-5%);-webkit-transform:scale(1.1,1.1)translateX(-5%);-moz-transform:scale(1.1,1.1)translateX(-5%);-o-transform:scale(1.1,1.1)translateX(-5%);
-*/}
-.imgPanoramicasPrincipal1{
-	opacity:0.7;
-	float:left;
-	left:0;
-	margin-bottom:10px;
-	margin-top:10px;
-	width:49.5%;
-	transition:opacity 2s;
-}
-.imgPanoramicasPrincipal1:hover{
-	z-index:4;
-	opacity:1;	
-}
-.divPanoramicasPrincipal{
-	clear:both;
-}
-#flashchat{
-height:900px;
-width:80%;
-margin-left:60px;
-}
 
-
+#minimapDiv{
+	width:100%;
+}
 
 </style>

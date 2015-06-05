@@ -173,7 +173,7 @@ void drawAxis(PGraphics pg, float s) {
 void keyPressed() {  
   switch(key){
     //translate
-    case 'w':  y=--y;        
+    case 'w':  y=y-1;        
     case 's':  y=y+1;               
     case 'a':  x=--x;               
     case 'd':  x=x+1;               
