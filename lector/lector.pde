@@ -1,18 +1,56 @@
 import remixlab.proscene.*;
+import remixlab.dandelion.core.*;
+import remixlab.dandelion.geom.*;
 
-
+Scene scene;
 
 String[] puntos;
-float upx=0,upy=1,upz=0;
-float posx=400,posy=0,posz=0;
-PShape guitarra;
+float upx=0,upy=1,upz=0,angX=0;
+float posx=400,posy=0,posz=0,minf1=100,minf2=100,minf3=100;
+PShape guitarra, f1,f2,f3;
+InteractiveFrame fr1, fr2, fr3;
 boolean framerate=false;
 
 void setup(){
  hint(DISABLE_DEPTH_TEST);
  //hint(ENABLE_DEPTH_SORT);
  size(700,700,P3D);
+ scene = new Scene(this);
+ scene.eye().frame().setDampingFriction(0);
  
+ 
+ fr1 = new InteractiveFrame(scene);    
+ 
+ f1 = createShape();
+ f1.beginShape();
+ f1.fill(100,124,210);
+  f1.rotateX(1.25);
+  f1.vertex(10, 18, -5);
+  f1.vertex(15, 20, 10);
+  f1.vertex(15, 75, 21);
+  f1.vertex(10, 95, 13);
+  f1.vertex(20, 60, 23);
+  f1.vertex(25, 75, 13);
+  f1.endShape(CLOSE);
+  
+  fr2 = new InteractiveFrame(scene, fr1);
+  fr2.translate(60, -40, -30);
+  fr2.scale(1.2);
+  
+  f2 = createShape();
+  f2.beginShape();
+  f2.translate(-5, 15, 25);
+  f2.fill(200,224,110);
+  f2.vertex(3, 20, 10);
+  f2.vertex(7, 4, 16);
+  f2.vertex(15, 17, 11);
+  f2.endShape(CLOSE);
+ 
+    
+  fr3 = new InteractiveFrame(scene, scene.eye().frame());
+  fr3.translate(-100, 0, -250);
+  
+ /*
  puntos = loadStrings("merge.off");
  guitarra = createShape();
  guitarra.beginShape(TRIANGLES);
@@ -29,35 +67,67 @@ void setup(){
     }    
   }
   guitarra.endShape();
- 
+ */
 }
 
 void draw(){
-  if(framerate)System.out.println(frameRate);
-  clear();
-  background(255);
-  camera(posx, posy ,posz, // eyeX, eyeY, eyeZ
-         0.0, 0.0, 0.0, // centerX, centerY, centerZ
-         upx, upy, upz); // upX, upY, upZ
-  float dirY = (mouseY / float(height) - 0.5) * 2;
-  float dirX = (mouseX / float(width) - 0.5) * 2;
-  directionalLight(204, 204, 204, -dirX, -dirY, -1);  
+  background(0);
+            
+  pushMatrix();
+  scene.applyTransformation(fr1);
+  scene.drawAxes(40);  
+  //shape(f1,0,0);
+  pushMatrix();
+  scene.applyTransformation(fr2);
+  scene.drawAxes(40);       
+  //shape(f2,0,0); 
+  popMatrix();
+  popMatrix();
   
-  stroke(255,0,0);//red x
-  line(-100, 0, 0, 100, 0, 0);
-  stroke(0,255,0);//green y
-  line(0, -100, 0, 0, 100, 0);
-  stroke(0,0,255);//blue z
-  line(0, 0, -100, 0, 0, 100);
-  
-  shape(guitarra,0,0);
-  rotateX(HALF_PI);
-  shape(guitarra,-100,0);
-  //frame.coordinatesOf(new Vec(Float.parseFloat(a[j][0])*300,Float.parseFloat(a[j][1])*300,Float.parseFloat(a[j][2])*300));
-  System.out.println(frame);
+  //eye
+  pushMatrix();
+  scene.applyTransformation(scene.eye().frame());
+  pushMatrix();
+  scene.applyTransformation(fr3);
+  scene.drawAxes(40);  
+  popMatrix();
+  popMatrix();  
+         
+ 
+ Vec pos1 = scene.eye().projectedCoordinatesOf(fr1.position());
+ Vec pos2 = scene.eye().projectedCoordinatesOf(fr2.position());
+
+ 
+     //PRUEBA 1
+     boolean test1 = true;
+     if(pos1.x() == pos2.x())test1 = false;
+     if(pos1.y() == pos2.y())test1 = false;
+
+
+    //PRUEBA 2
+     boolean test2 = true;      
+     if(pos1.z() < pos2.z())test1 = false;                 
+    
+    //PRUEBA 3
+     boolean test3 = true;     
+    if(pos2.z() > pos1.z())test1 = false;                   
+
+    System.out.println("test1 :" + test1);
+    System.out.println("test2 :" + test2);
+    System.out.println("test3 :" + test3);
+
+    if(test1&&test2&&test3){
+      shape(f2,0,0);
+      shape(f1,0,0);      
+    }
+    else{      
+      shape(f1,0,0);
+      shape(f2,0,0);
+    }
 }
 
 void keyPressed(){  
+  /*
   switch(key){      
       case 'q': posx+=5; break;
       case 'w': posx-=5; break;
@@ -73,11 +143,13 @@ void keyPressed(){
       
   }
   System.out.println("x"+posx+" y"+posy+" z"+posz+"   ");
-}
-void mouseDragged(){
-  posz-=pmouseX-mouseX;
-  posy+=pmouseY-mouseY;
+  */
   
+  if(scene.eye().frame().dampingFriction() == 0)
+    scene.eye().frame().setDampingFriction(0.5);
+  else
+    scene.eye().frame().setDampingFriction(0);
+  println("Camera damping friction now is " + scene.eye().frame().dampingFriction());
 }
 
 
